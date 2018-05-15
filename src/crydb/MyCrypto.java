@@ -17,10 +17,12 @@ import java.security.spec.X509EncodedKeySpec;
 import javax.xml.bind.DatatypeConverter;
 
 public class MyCrypto {
-  private final String ALGORITHM = "RSA";
-  private final String ALGORITHM_SIMMETRIC = "AES";
-  private final String HASH_METHOD = "MD5";
-  private final int    HASH_LENGTH = 16;  // длина хэш суммы в байтах
+  private final String  ALGORITHM = "RSA";
+  private final int     ALGORITHM_LENGTH = 128; // длина RSA шифровки (байт)
+  private final String  ALGORITHM_SIMMETRIC = "AES";
+  private final int     ALGORITHM_SIMMETRIC_LENGTH = 16; // длина ключа AES (байт)
+  private final String  HASH_METHOD = "MD5";
+  private final int     HASH_LENGTH = 16;  // длина хэш суммы (байт)
 
   private String s_publicKey = null;
   private String s_privateKey = null;
@@ -97,7 +99,7 @@ public class MyCrypto {
    * @return
    * @throws GeneralSecurityException
    */
-  private byte[] encryptRSA(byte[] mess) throws GeneralSecurityException
+  protected byte[] encryptRSA(byte[] mess) throws GeneralSecurityException
   {
     final Cipher cipher = Cipher.getInstance(ALGORITHM);
     cipher.init(Cipher.ENCRYPT_MODE, this.k_publicKey);
@@ -112,7 +114,7 @@ public class MyCrypto {
    * @return
    * @throws GeneralSecurityException
    */
-  private byte[] encryptAES(byte[] key, byte[] mess) throws GeneralSecurityException
+  protected byte[] encryptAES(byte[] key, byte[] mess) throws GeneralSecurityException
   {
     final Cipher cipher = Cipher.getInstance(ALGORITHM_SIMMETRIC);
     SecretKeySpec secretKey = new SecretKeySpec(key, ALGORITHM_SIMMETRIC);
@@ -148,7 +150,7 @@ public class MyCrypto {
    * @param cryptMess  зашифрованные байты
    * @return
    */
-  private byte[]  decryptRSA(byte[] cryptMess) throws GeneralSecurityException
+  protected byte[]  decryptRSA(byte[] cryptMess) throws GeneralSecurityException
   {
     final Cipher cipher = Cipher.getInstance(ALGORITHM);
     cipher.init(Cipher.DECRYPT_MODE, this.k_privateKey);
@@ -162,7 +164,7 @@ public class MyCrypto {
    * @param cryptMess зашифрованные байты
    * @return
    */
-  private byte[]  decryptAES(byte[] key,byte[] cryptMess) throws GeneralSecurityException
+  protected byte[]  decryptAES(byte[] key,byte[] cryptMess) throws GeneralSecurityException
   {
     final Cipher cipher = Cipher.getInstance(ALGORITHM_SIMMETRIC);
     SecretKeySpec secretKey = new SecretKeySpec(key, ALGORITHM_SIMMETRIC);
@@ -178,7 +180,7 @@ public class MyCrypto {
    * @throws NoSuchAlgorithmException
    * @throws InvalidKeySpecException
    */
-  private PublicKey restorePublic(String hexStr) throws NoSuchAlgorithmException, InvalidKeySpecException
+  protected PublicKey restorePublic(String hexStr) throws NoSuchAlgorithmException, InvalidKeySpecException
   {
     KeyFactory keyFactory = KeyFactory.getInstance(ALGORITHM);
     byte[] b = hex2Byte(hexStr);    // сделаем, требуемый байтовый массив
@@ -193,7 +195,7 @@ public class MyCrypto {
    * @throws NoSuchAlgorithmException
    * @throws InvalidKeySpecException
    */
-  private PrivateKey restorePrivate(String hexStr) throws NoSuchAlgorithmException, InvalidKeySpecException
+  protected PrivateKey restorePrivate(String hexStr) throws NoSuchAlgorithmException, InvalidKeySpecException
   {
     KeyFactory keyFactory = KeyFactory.getInstance(ALGORITHM);
     byte[] b = hex2Byte(hexStr);    // сделаем, требуемый байтовый массив
@@ -246,15 +248,25 @@ public class MyCrypto {
 */
 
 
-  public String byte2Hex(byte b[])
+  protected String byte2Hex(byte b[])
   {
-    String hex = DatatypeConverter.printHexBinary(b);
+    String hex = "";
+    try {
+      hex = DatatypeConverter.printHexBinary(b);
+    } catch (IllegalArgumentException ex) {
+      System.err.println(ex.getMessage());
+    }
     return hex;
   }
 
-  public byte[] hex2Byte(String str)
+  protected byte[] hex2Byte(String str)
   {
-    byte b[] = DatatypeConverter.parseHexBinary(str);
+    byte[] b = new byte[1];
+    try {
+      b = DatatypeConverter.parseHexBinary(str);
+    } catch (IllegalArgumentException ex) {
+      System.err.println(ex.getMessage());
+    }
     return b;
   }
 
@@ -268,7 +280,7 @@ public class MyCrypto {
    * @param b байты сообщения
    * @return  байты хэш-суммы
    */
-  protected byte[]    getHash(byte[] b)
+  protected byte[]  getHash(byte[] b)
   {
     byte[] hashedBytes;
     try {
@@ -288,23 +300,18 @@ public class MyCrypto {
    * @param hash  байты хэша
    * @return  true - совпадает, false - не совпадает
    */
-  protected boolean   checkHash(byte[] b, byte[] hash)
+  protected boolean checkHash(byte[] b, byte[] hash)
   {
     boolean res = false;
-    try {
-      MessageDigest digest = MessageDigest.getInstance(HASH_METHOD);
-      digest.update(b);
-      byte[] hashedBytes = digest.digest();
-      int l = hashedBytes.length;
-      for (int i = 0; i < l; i++) {
-        if(b[i] != hashedBytes[i])
-          return false;
-      }
-      res = true;
-    } catch (NoSuchAlgorithmException | IndexOutOfBoundsException ex) {
-      System.err.println(ex.getMessage());
+    byte[] hashedBytes = getHash(b);
+    int l = hashedBytes.length;
+    if(l != hash.length)
+      return false;
+    for (int i = 0; i < l; i++) {
+      if(hash[i] != hashedBytes[i])
+        return false;
     }
-    return res;
+    return true;
   }
 
   /**
@@ -352,21 +359,35 @@ public class MyCrypto {
 
   public String encryptBig(String text)
   {
-    String otvet = "<big encrypt error> ";
-    // тест
+    String otvet = "<encrypt error> ";
+    byte[] hash_mess;
+    // подготовим сообщение к шифрованию, добавим в начало хэш-сумму
+    try {
+      byte[] mess = text.getBytes();  // байты сообщения
+      byte[] hash = getHash(mess);    // получим HASH_LENGTH байт хэш-суммы сообщения
+      ByteArrayOutputStream bom = new ByteArrayOutputStream();  // сделаем хэш + сообщение
+      bom.write(hash);
+      bom.write(mess);
+      hash_mess = bom.toByteArray();  // массив хэш + сообщение
+    } catch (IOException ex) {
+      otvet = otvet + " " + ex.getMessage();
+      return otvet;
+    }
+    // случайный ключ сеанса
     SecureRandom random = new SecureRandom();
-    byte[] seskey = new byte[16];  // формируем сеансовый ключ
+    byte[] seskey = new byte[ALGORITHM_SIMMETRIC_LENGTH];  // формируем сеансовый ключ
     random.nextBytes(seskey);      // случайная последовательность
-    byte[] mess = text.getBytes();  // байты сообщения
     try {
       byte[] cryptSesKey = encryptRSA(seskey);  // зашифруем ключ - получим 128 байт
-      byte[] cryptText   = encryptAES(seskey, mess);
+      byte[] cryptText   = encryptAES(seskey, hash_mess); // шифруем спец-сообщение
       ByteArrayOutputStream bos = new ByteArrayOutputStream();
+      // [зашифрованный <сеансовый ключ>]
+      // [зашифрованное сообщение <хэш сумма><сообщение>]
       bos.write(cryptSesKey);
       bos.write(cryptText);
       byte[] bo = bos.toByteArray();
-      String otv = byte2Hex(bo);
-      otvet = wrapLine(otv);
+      String res = byte2Hex(bo);
+      otvet = wrapLine(res);
     } catch (IOException | GeneralSecurityException ex) {
       //eх.printStackTrace();
       otvet = otvet + " " + ex.getMessage();
@@ -377,22 +398,40 @@ public class MyCrypto {
   public String decryptBig(String message)
   {
     int l, lk, i, j;
-    String otvet = "<error big decrypt> "; // ответ в случае ошибки раскодирования
+    String otvet = "<error decrypt> "; // ответ в случае ошибки раскодирования
+    byte[] decrHashMess;
     try {
       String mess = onlyHex(message);     // hex символы
       byte[] crypto = hex2Byte(mess);     // зашифрованные байты
       //
       l = crypto.length;                  // длина общего массивы
-      lk = 128;                           // длина массива зашифрованного ключа
+      lk = ALGORITHM_LENGTH;              // длина массива зашифрованного ключа
       //
       byte[] cryptSesKey = new byte[lk];            // байтовый массив с зашифрованным ключом
-      for(i=0; i<lk; i++) cryptSesKey[i] = crypto[i];
-      byte[] sesKey    = decryptRSA(cryptSesKey);   // расшифрованный ключ
       byte[] cryptText = new byte[l - lk];          // байтовый массив с зашифрованным сообщением
-      for(i=lk, j=0; i<l;) cryptText[j++] = crypto[i++];
-      byte[] decrMess = decryptAES(sesKey, cryptText);  // расшифрованное сообщение
-      otvet = new String(decrMess);                 // строка расшифрованного сообщения
+      for(i=0; i < lk; i++) cryptSesKey[i] = crypto[i];
+      for(j=0; i < l;)      cryptText[j++] = crypto[i++];
+      byte[] sesKey    = decryptRSA(cryptSesKey);   // расшифрованный ключ
+      decrHashMess = decryptAES(sesKey, cryptText); // расшифрованное сообщение hash + mess
     } catch (NullPointerException | ArrayIndexOutOfBoundsException | GeneralSecurityException ex) {
+      otvet = otvet + ex.getMessage();
+      return otvet;
+    }
+    // расшифровали хэш + сообщение проверим сообщение по хэшу
+    try {
+      l = decrHashMess.length;  // длина хэш+сообщение
+      lk = HASH_LENGTH;         // длина хэш-суммы
+      byte[] hash = new byte[HASH_LENGTH];
+      byte[] mess = new byte[l-lk];
+      for(i=0; i < lk; i++) hash[i] = decrHashMess[i];    // хэш-сумма
+      for(j=0; i < l;)    mess[j++] = decrHashMess[i++];  // сообщение
+      boolean ok = checkHash(mess, hash); // проверим хэш сумму сообщения
+      if(ok) {
+        otvet = new String(mess);
+      } else {
+        otvet = otvet + "ошибка контрольной суммы";
+      }
+    } catch (NegativeArraySizeException | NullPointerException | ArrayIndexOutOfBoundsException ex) {
       otvet = otvet + ex.getMessage();
     }
     return otvet;
