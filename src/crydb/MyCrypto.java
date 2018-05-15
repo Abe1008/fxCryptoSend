@@ -213,12 +213,6 @@ public class MyCrypto {
     return hs.toLowerCase();
   }
 
-  /*public static String byte2Hex(byte b[])
-  {
-    String hex = DatatypeConverter.printHexBinary(b);
-    return hex;
-  }*/
-
   private static byte hex2Byte(char a1, char a2)
   {
     int k;
@@ -247,11 +241,19 @@ public class MyCrypto {
     return r;
   }
 
-  /*public static byte[] hex2Byte(String str)
+  /*
+  public static String byte2Hex(byte b[])
+  {
+    String hex = DatatypeConverter.printHexBinary(b);
+    return hex;
+  }
+
+  public static byte[] hex2Byte(String str)
   {
     byte b[] = DatatypeConverter.parseHexBinary(str);
     return b;
-  }*/
+  }
+  */
 
   /**
    * Добавляет переводы строки во входную строку
