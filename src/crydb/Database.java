@@ -16,6 +16,7 @@ public class Database
 {
     protected Connection f_connection = null;
     private Statement  f_statement  = null;
+    private String  lastError = "";
     
     /**
      * Возвращает соединение с БД
@@ -39,7 +40,8 @@ public class Database
                 try {
                     f_statement = conn.createStatement();
                 } catch (SQLException e) {
-                    System.err.println(e.getMessage()); // e.printStackTrace();
+                    lastError = e.getMessage();
+                    System.err.println(lastError); // e.printStackTrace();
                 }
             }
         }
@@ -60,8 +62,8 @@ public class Database
                 stm.execute(sql);
                 a = stm.getUpdateCount();
             } catch (SQLException e) {
-                // System.out.println(e.getMessage());  //e.printStackTrace();
-                a = 0;
+                lastError = e.getMessage();
+                System.err.println(lastError);  //e.printStackTrace();
             }
         }
         return a;
@@ -76,7 +78,7 @@ public class Database
     public synchronized String Dlookup(String strSql)
     {
         String result = null;
-        ResultSet rst = null;
+        ResultSet rst;
         Statement stm = getDbStatement();
         if(stm != null) {
             try {
@@ -86,7 +88,8 @@ public class Database
                 }
                 rst.close();
             } catch (SQLException e) {
-                // System.out.println(e.getMessage()); // e.printStackTrace();
+              lastError = e.getMessage();
+                System.err.println(lastError); // e.printStackTrace();
             }
         }
         return result;
@@ -116,7 +119,8 @@ public class Database
                 }
                 rst.close();
             } catch (SQLException e) {
-                // System.out.println(e.getMessage()); // e.printStackTrace();
+                lastError = e.getMessage();
+                System.err.println(lastError); // e.printStackTrace();
             }
         }
         return result;
@@ -132,7 +136,7 @@ public class Database
                 f_statement.close();
                 f_statement=null;
             } catch (SQLException e) {
-                e.printStackTrace();
+                lastError = e.getMessage();
             }
         }
         if(f_connection != null) {
@@ -140,10 +144,30 @@ public class Database
                 f_connection.close();
                 f_connection=null;
             } catch (SQLException e) {
-                System.out.println(e.getMessage()); // e.printStackTrace();
+                lastError = e.getMessage();
+                System.err.println(lastError); // e.printStackTrace();
             }
         }
 
     }
-    
+
+    public String getLastError() {
+      return lastError;
+    }
+
+  /**
+     * заменяет апостроф на обратный апостров, чтобы можно было вставить в БД
+     * и обрамляет строку апострофами, если не null
+     * @param str   исходная строка
+     * @return      строка с замененными апострофами
+     */
+    public String s2s(String str)
+    {
+      if(null == str || str.length()<1) {
+        return "null";
+      }
+      String s = str.replace("'", "`");
+      return "'" + s + "'";
+    }
+
 } // end of class

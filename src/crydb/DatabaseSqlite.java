@@ -44,4 +44,19 @@ public class DatabaseSqlite extends Database
         return f_connection;
     }
 
+    /**
+     * заменяет апостроф на два апострова(особенность Sqlite), чтобы можно было вставить в БД
+     * https://www.sqlite.org/faq.html#q14
+     * и обрамляет строку апострофами, если не null
+     * @param str   исходная строка
+     * @return      строка с замененными апострофами
+     */
+    @Override
+    public String s2s(String str) {
+            if(null == str || str.length()<1) {
+                return "null";
+            }
+            String s = str.replace("'", "''");
+            return "'" + s + "'";
+    }
 } // end of class
