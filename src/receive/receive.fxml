@@ -9,7 +9,8 @@
         <Label fx:id="lbl_title" text="Дешифрация зашифрованного сообщения (алгоритм несимметричных ключей RSA)" GridPane.columnSpan="2" />
         <Label text="выбрать получателя" GridPane.rowIndex="1" />
         <ComboBox fx:id="cb_reciever" prefWidth="150.0" promptText="получатель" GridPane.rowIndex="2" />
-        <TextArea fx:id="ta_inputTxt" prefHeight="200.0" prefWidth="400.0" GridPane.rowIndex="4" />
+        <TextArea fx:id="ta_inputTxt" prefHeight="200.0" prefWidth="400.0"
+                  promptText="Шифрованное сообщение" GridPane.rowIndex="4" />
         <Label text="шифровка" GridPane.rowIndex="3" />
         <Button fx:id="btn_decrypt" mnemonicParsing="false" onAction="#onclickBtnDecrypt" text="расшифровать" GridPane.columnIndex="1" GridPane.rowIndex="2" />
         <Label text="расшифрованное сообщение" GridPane.columnIndex="1" GridPane.rowIndex="3" />

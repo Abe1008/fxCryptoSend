@@ -2,8 +2,7 @@ package sender;
 
 /*
  Контроллер для отправки сообщений
- для добавления данных из БД используем интерфейс
- http://qaru.site/questions/1182227/managing-a-combobox-items-in-javafx
+
  */
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -15,13 +14,15 @@ import javafx.scene.control.TextArea;
 import java.net.URL;
 import java.util.ResourceBundle;
 
+// для добавления данных из БД используем интерфейс
+//    http://qaru.site/questions/1182227/managing-a-combobox-items-in-javafx
 public class Controller implements Initializable {
   @FXML
-  ComboBox<String>  cb_reciever;
+  ComboBox<String>  cb_reciever;  // имя получателя шифровки
   @FXML
-  TextArea  ta_inputTxt;
+  TextArea  ta_inputTxt;          // входное сообщение
   @FXML
-  TextArea  ta_outputTxt;
+  TextArea  ta_outputTxt;         // зашифрованное сообщение (шифрограмма)
   @FXML
   Button btn_Encrypt;
 

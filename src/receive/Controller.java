@@ -12,11 +12,11 @@ import java.util.ResourceBundle;
 
 public class Controller implements Initializable {
   @FXML
-  ComboBox<String> cb_reciever;
+  ComboBox<String> cb_reciever; // имя получателя шифровки
   @FXML
-  TextArea  ta_inputTxt;
+  TextArea  ta_inputTxt;        // шифрограмма - входное сообщение
   @FXML
-  TextArea  ta_outputTxt;
+  TextArea  ta_outputTxt;       // выходное сообщение - расшифрованная шифрограмма
   @FXML
   Button btn_Encrypt;
 

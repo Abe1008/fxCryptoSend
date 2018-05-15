@@ -5,9 +5,7 @@
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.TextArea?>
 <?import javafx.scene.control.TextField?>
-<?import javafx.scene.layout.ColumnConstraints?>
 <?import javafx.scene.layout.GridPane?>
-<?import javafx.scene.layout.RowConstraints?>
 
 <GridPane alignment="center" hgap="10" vgap="10" xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1" fx:controller="keygen.Controller">
     <children>
@@ -17,10 +15,10 @@
       <Label text="Имя нового Получателя" GridPane.columnIndex="1" GridPane.rowIndex="6" />
       <TextField fx:id="txt_usr" GridPane.columnIndex="1" GridPane.rowIndex="7" />
       <Label text="публичный ключ" GridPane.columnIndex="1" GridPane.rowIndex="8" />
-      <TextArea fx:id="ta_publicKey" prefHeight="300.0" prefWidth="350" wrapText="true" GridPane.columnIndex="1" GridPane.rowIndex="9" />
+      <TextArea fx:id="ta_publicKey" prefHeight="250.0" prefWidth="350" wrapText="true" GridPane.columnIndex="1" GridPane.rowIndex="9" />
       <Label text="приватный ключ" GridPane.columnIndex="2" GridPane.rowIndex="8" />
       <Button fx:id="btn_keygen" mnemonicParsing="false" onAction="#onclickBtnKeygen" text="генерировать ключи" GridPane.columnIndex="2" GridPane.rowIndex="7" />
-      <TextArea fx:id="ta_privateKey" prefHeight="300.0" prefWidth="400" wrapText="true" GridPane.columnIndex="2" GridPane.rowIndex="9" />
+      <TextArea fx:id="ta_privateKey" prefHeight="250.0" prefWidth="400" wrapText="true" GridPane.columnIndex="2" GridPane.rowIndex="9" />
       <Button fx:id="btn_deleteusr" mnemonicParsing="false" onAction="#onclickBtnDeleteusr" text="удалить" GridPane.columnIndex="2" GridPane.rowIndex="4" />
     </children>
 
