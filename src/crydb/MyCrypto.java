@@ -30,10 +30,8 @@ public class MyCrypto {
   private PublicKey k_publicKey = null;
   private PrivateKey k_privateKey = null;
 
-  private final String delim = "ghijklmnopqrstuvwyz"; // буквы отделители
-
   public MyCrypto() {
-    ;
+
   }
 
   public MyCrypto(String publicKey, String privateKey) {
@@ -95,8 +93,8 @@ public class MyCrypto {
 
   /**
    * Зашифровать байты по алгоритму RSA
-   * @param mess
-   * @return
+   * @param mess  исходное сообщение
+   * @return  зашифрованное сообщение
    * @throws GeneralSecurityException
    */
   protected byte[] encryptRSA(byte[] mess) throws GeneralSecurityException
@@ -111,7 +109,7 @@ public class MyCrypto {
    * Зашифровать байты по алгоритму RSA
    * @param key   ключ
    * @param mess  исходное сообщение
-   * @return
+   * @return  зашифрованное сообщение
    * @throws GeneralSecurityException
    */
   protected byte[] encryptAES(byte[] key, byte[] mess) throws GeneralSecurityException
@@ -148,7 +146,7 @@ public class MyCrypto {
   /**
    * Расшифровать сообщения по RSA
    * @param cryptMess  зашифрованные байты
-   * @return
+   * @return  расшифрованные байты сообщения
    */
   protected byte[]  decryptRSA(byte[] cryptMess) throws GeneralSecurityException
   {
@@ -162,7 +160,7 @@ public class MyCrypto {
    * Расшифровать сообщения по AES
    * @param key       ключевые байты
    * @param cryptMess зашифрованные байты
-   * @return
+   * @return  расшифрованные байты сообщения
    */
   protected byte[]  decryptAES(byte[] key,byte[] cryptMess) throws GeneralSecurityException
   {
@@ -246,7 +244,6 @@ public class MyCrypto {
     return r;
   }
 */
-
 
   protected String byte2Hex(byte b[])
   {
@@ -411,7 +408,7 @@ public class MyCrypto {
       byte[] cryptText = new byte[l - lk];          // байтовый массив с зашифрованным сообщением
       for(i=0; i < lk; i++) cryptSesKey[i] = crypto[i];
       for(j=0; i < l;)      cryptText[j++] = crypto[i++];
-      byte[] sesKey    = decryptRSA(cryptSesKey);   // расшифрованный ключ
+      byte[] sesKey = decryptRSA(cryptSesKey);      // расшифрованный ключ
       decrHashMess = decryptAES(sesKey, cryptText); // расшифрованное сообщение hash + mess
     } catch (NullPointerException | ArrayIndexOutOfBoundsException | GeneralSecurityException ex) {
       otvet = otvet + ex.getMessage();
