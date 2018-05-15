@@ -19,6 +19,8 @@ import javax.xml.bind.DatatypeConverter;
 public class MyCrypto {
   private final String ALGORITHM = "RSA";
   private final String ALGORITHM_SIMMETRIC = "AES";
+  private final String HASH_METHOD = "MD5";
+  private final int    HASH_LENGTH = 16;  // длина хэш суммы в байтах
 
   private String s_publicKey = null;
   private String s_privateKey = null;
@@ -260,6 +262,50 @@ public class MyCrypto {
   // CRC32 https://www.quickprogrammingtips.com/java/how-to-calculate-crc32-checksum-in-java.html
   // http://www.codejava.net/coding/how-to-calculate-md5-and-sha-hash-values-in-java
   // https://docs.oracle.com/javase/8/docs/api/java/security/MessageDigest.html
+
+  /**
+   * Сделать хэш-сумму сообщения
+   * @param b байты сообщения
+   * @return  байты хэш-суммы
+   */
+  protected byte[]    getHash(byte[] b)
+  {
+    byte[] hashedBytes;
+    try {
+      MessageDigest digest = MessageDigest.getInstance(HASH_METHOD);
+      digest.update(b);
+      hashedBytes = digest.digest();
+    } catch (NoSuchAlgorithmException ex) {
+      System.err.println(ex.getMessage());
+      hashedBytes = new byte[HASH_LENGTH];  // неправильный хэш
+    }
+    return hashedBytes;
+  }
+
+  /**
+   * Сверить хэш сумму сообщения и заданного хэша
+   * @param b     байты сообщения
+   * @param hash  байты хэша
+   * @return  true - совпадает, false - не совпадает
+   */
+  protected boolean   checkHash(byte[] b, byte[] hash)
+  {
+    boolean res = false;
+    try {
+      MessageDigest digest = MessageDigest.getInstance(HASH_METHOD);
+      digest.update(b);
+      byte[] hashedBytes = digest.digest();
+      int l = hashedBytes.length;
+      for (int i = 0; i < l; i++) {
+        if(b[i] != hashedBytes[i])
+          return false;
+      }
+      res = true;
+    } catch (NoSuchAlgorithmException | IndexOutOfBoundsException ex) {
+      System.err.println(ex.getMessage());
+    }
+    return res;
+  }
 
   /**
    * Добавляет переводы строки во входную строку
