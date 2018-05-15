@@ -17,8 +17,8 @@ import java.security.spec.X509EncodedKeySpec;
 import javax.xml.bind.DatatypeConverter;
 
 public class MyCrypto {
-  private static final String ALGORITHM = "RSA";
-  private static final String ALGORITHM_SIMMETRIC = "AES";
+  private final String ALGORITHM = "RSA";
+  private final String ALGORITHM_SIMMETRIC = "AES";
 
   private String s_publicKey = null;
   private String s_privateKey = null;
@@ -176,7 +176,7 @@ public class MyCrypto {
    * @throws NoSuchAlgorithmException
    * @throws InvalidKeySpecException
    */
-  private static PublicKey restorePublic(String hexStr) throws NoSuchAlgorithmException, InvalidKeySpecException
+  private PublicKey restorePublic(String hexStr) throws NoSuchAlgorithmException, InvalidKeySpecException
   {
     KeyFactory keyFactory = KeyFactory.getInstance(ALGORITHM);
     byte[] b = hex2Byte(hexStr);    // сделаем, требуемый байтовый массив
@@ -191,7 +191,7 @@ public class MyCrypto {
    * @throws NoSuchAlgorithmException
    * @throws InvalidKeySpecException
    */
-  private static PrivateKey restorePrivate(String hexStr) throws NoSuchAlgorithmException, InvalidKeySpecException
+  private PrivateKey restorePrivate(String hexStr) throws NoSuchAlgorithmException, InvalidKeySpecException
   {
     KeyFactory keyFactory = KeyFactory.getInstance(ALGORITHM);
     byte[] b = hex2Byte(hexStr);    // сделаем, требуемый байтовый массив
@@ -199,7 +199,8 @@ public class MyCrypto {
     return keyFactory.generatePrivate(privateKeySpec);
   }
 
-  private static String byte2Hex(byte b[])
+  /*
+  private String byte2Hex(byte b[])
   {
     String hs = "";
     String stmp;
@@ -213,7 +214,7 @@ public class MyCrypto {
     return hs.toLowerCase();
   }
 
-  private static byte hex2Byte(char a1, char a2)
+  private byte hex2Byte(char a1, char a2)
   {
     int k;
     if (a1 >= '0' && a1 <= '9') k = a1 - 48;
@@ -228,7 +229,7 @@ public class MyCrypto {
     return (byte) (k & 0xff);
   }
 
-  private static byte[] hex2Byte(String str)
+  private byte[] hex2Byte(String str)
   {
     int l = str.length();
     if (l % 2 != 0) return null;
@@ -240,27 +241,32 @@ public class MyCrypto {
     }
     return r;
   }
+*/
 
-  /*
-  public static String byte2Hex(byte b[])
+
+  public String byte2Hex(byte b[])
   {
     String hex = DatatypeConverter.printHexBinary(b);
     return hex;
   }
 
-  public static byte[] hex2Byte(String str)
+  public byte[] hex2Byte(String str)
   {
     byte b[] = DatatypeConverter.parseHexBinary(str);
     return b;
   }
-  */
+
+  // TODO сделать проверку хэш-суммы сообщения
+  // CRC32 https://www.quickprogrammingtips.com/java/how-to-calculate-crc32-checksum-in-java.html
+  // http://www.codejava.net/coding/how-to-calculate-md5-and-sha-hash-values-in-java
+  // https://docs.oracle.com/javase/8/docs/api/java/security/MessageDigest.html
 
   /**
    * Добавляет переводы строки во входную строку
    * @param input входная строка
    * @return  выходная строка с переводами строк
    */
-  public static String wrapLine(String input)
+  public String wrapLine(String input)
   {
     final int mmx = 46; // максимальная длина строки
     final int n = input.length();
@@ -280,7 +286,7 @@ public class MyCrypto {
    * @param input входная строка
    * @return  выходная строка состоящая только их hex-символов
    */
-  public static String onlyHex(String input)
+  public String onlyHex(String input)
   {
     int i, n;
     n = input.length();
