@@ -35,7 +35,7 @@ public class MyCrypto {
   }
 
   public MyCrypto(String publicKey, String privateKey) {
-    this.s_publicKey = publicKey;
+    this.s_publicKey  = publicKey;
     this.s_privateKey = privateKey;
     try {
       if (publicKey != null && publicKey.length() > 4)
@@ -318,7 +318,7 @@ public class MyCrypto {
    */
   public String wrapLine(String input)
   {
-    final int mmx = 46; // максимальная длина строки
+    final int mmx = 44; // максимальная длина строки
     final int n = input.length();
     final int m = n + 2*(mmx-1+n)/mmx; // добавка перевод строк
     int i;
@@ -354,6 +354,13 @@ public class MyCrypto {
   ////////////////////////////////////////////////
   // Эксперимент с большими данными
 
+  /**
+   * Зашифровать большое сообщение сеансовым ключом, который шифроуется открытым ключом
+   * [сеансовый ключ] 128 байт
+   * [хэш(MD5)+сообщение]
+   * @param text  входное сообщение
+   * @return  зашифрованное сообщение
+   */
   public String encryptBig(String text)
   {
     String otvet = "<encrypt error> ";
@@ -362,7 +369,10 @@ public class MyCrypto {
     try {
       byte[] mess = text.getBytes();  // байты сообщения
       byte[] hash = getHash(mess);    // получим HASH_LENGTH байт хэш-суммы сообщения
-      ByteArrayOutputStream bom = new ByteArrayOutputStream();  // сделаем хэш + сообщение
+      // создадим выходной поток, в которой пеместим хэш и текст сообщения
+      ByteArrayOutputStream bom = new ByteArrayOutputStream(hash.length + mess.length);
+      // [хэш-сумма]
+      // [сообщение]
       bom.write(hash);
       bom.write(mess);
       hash_mess = bom.toByteArray();  // массив хэш + сообщение
@@ -377,13 +387,14 @@ public class MyCrypto {
     try {
       byte[] cryptSesKey = encryptRSA(seskey);  // зашифруем ключ - получим 128 байт
       byte[] cryptText   = encryptAES(seskey, hash_mess); // шифруем спец-сообщение
-      ByteArrayOutputStream bos = new ByteArrayOutputStream();
-      // [зашифрованный <сеансовый ключ>]
-      // [зашифрованное сообщение <хэш сумма><сообщение>]
+      // создадим выходной поток, в которой пеместим зашифрованный ключ и сообщение с хэш-суммой
+      ByteArrayOutputStream bos = new ByteArrayOutputStream(cryptSesKey.length + cryptText.length);
+      // [зашифрованный RSA сеансовый ключ]
+      // [зашифрованное AES хэш сумма + сообщение]
       bos.write(cryptSesKey);
       bos.write(cryptText);
       byte[] bo = bos.toByteArray();
-      String res = byte2Hex(bo);
+      String res = byte2Hex(bo);    // разбить на строки
       otvet = wrapLine(res);
     } catch (IOException | GeneralSecurityException ex) {
       //eх.printStackTrace();
@@ -392,6 +403,13 @@ public class MyCrypto {
     return otvet;
   }
 
+  /**
+   * Расшифровать большое сообщение. Расшифровав сеансовый ключ приватным ключом,
+   * а затем расшифровав хэш-сумму(16 байт) + сообщение. После чего, сообщение проверить
+   * на совпадение хэш-суммы (MD5).
+   * @param message
+   * @return
+   */
   public String decryptBig(String message)
   {
     int l, lk, i, j;
@@ -410,7 +428,7 @@ public class MyCrypto {
       for(j=0; i < l;)      cryptText[j++] = crypto[i++];
       byte[] sesKey = decryptRSA(cryptSesKey);      // расшифрованный ключ
       decrHashMess = decryptAES(sesKey, cryptText); // расшифрованное сообщение hash + mess
-    } catch (NullPointerException | ArrayIndexOutOfBoundsException | GeneralSecurityException ex) {
+    } catch (NullPointerException | NegativeArraySizeException| ArrayIndexOutOfBoundsException | GeneralSecurityException ex) {
       otvet = otvet + ex.getMessage();
       return otvet;
     }
